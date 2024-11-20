@@ -6,7 +6,8 @@ include "include/config.php";
 if (isset($_POST["submit"])) {
     // Check if any field is empty on the server side
     if (empty($_POST["name"]) || empty($_POST["lname"]) || empty($_POST["email"]) || 
-        empty($_POST["phone"]) || empty($_POST["gender"]) || empty($_POST["address"])) {
+        empty($_POST["phone"]) || empty($_POST["gender"]) || empty($_POST["address"]) ||
+        empty($_POST["password"]) || empty($_POST["confirm_password"])) {
         echo "<script>alert('All fields are required.');</script>";
     } else {
         // Get form data
@@ -16,22 +17,34 @@ if (isset($_POST["submit"])) {
         $phone = $_POST["phone"];
         $gender = $_POST["gender"];
         $address = $_POST["address"];
+        $password = $_POST["password"];
+        $confirm_password = $_POST["confirm_password"];
 
+// Server-side validation
+if ($password !== $confirm_password) {
+    echo "<script>alert('Passwords do not match.');</script>";
+} elseif (strlen($password) < 4) {
+    echo "<script>alert('Password must be at least 4 characters long.');</script>";
+} elseif (!preg_match('/[^a-zA-Z0-9]/', $password)) {
+    echo "<script>alert('Password must contain at least one special character.');</script>";
+} else {
+    // If validation passes, proceed with inserting the data
+    $hashedPassword = password_hash($password, PASSWORD_DEFAULT); // Always hash passwords before saving
 
             // Insert data into the database
-            $sql_query = "INSERT INTO crud_table(id, name, lname, email, phone, gender, address) 
-                        VALUES (NULL, '$name', '$lname', '$email', '$phone', '$gender', '$address')";
+            $sql_query = "INSERT INTO crud_table(id, name, lname, email, phone, gender, address, password) 
+                        VALUES (NULL, '$name', '$lname', '$email', '$phone', '$gender', '$address', '$hashedPassword')";
 
             $result_query = mysqli_query($connection, $sql_query);
 
             if ($result_query) {
                 echo "<script>alert('Data Successfully Added');</script>";
-                echo "<script>location.replace('index.php');</script>";
+                echo "<script>location.replace('user_login.php');</script>";
             } else {
                 echo $connection->error;
             }
         }
-    // }
+    }
 }
 ?>
 
@@ -55,22 +68,15 @@ if (isset($_POST["submit"])) {
             cursor: not-allowed; 
             color: green;
         }
-
-
     </style>
 </head>
 
 <body>
     <div class="text-center">
-        <h2 class="text-primary">PHP CRUD Operation</h2>
+        <h2 class="text-primary">User Register</h2>
     </div>
     <div class="container p-5 card">
         <form action="" method="POST" id="crudForm" onsubmit="return validateForm()">
-        <div class="row">
-            <div class="col-12 mb-3"> 
-            <a class="btn btn-success" href="index.php">Table</a>
-            </div>
-        </div>
             <div class="row">
                 <div class="col-4">
                     <label class="label">Name<span class="text-danger">*</span></label>
@@ -108,11 +114,25 @@ if (isset($_POST["submit"])) {
                     <textarea class="form-control" placeholder="Enter Your Address" name="address" id="address"></textarea>
                     <div id="addressError" class="error"></div>
                 </div>
+                <div class="col-4 mt-2">
+                    <label class="label">Password<span class="text-danger">*</span></label>
+                    <input class="form-control" type="password" placeholder="Enter Your Password" name="password" id="password">
+                    <div id="passwordError" class="error"></div>
+                </div>
+                <div class="col-4 mt-2">
+                    <label class="label">Confirm Password<span class="text-danger">*</span></label>
+                    <input class="form-control" type="password" placeholder="Confirm Your Password" name="confirm_password" id="confirm_password">
+                    <div id="confirmPasswordError" class="error"></div>
+                </div>
+
                 <div class="text-center mt-4">
                     <button name="submit" class="btn btn-success" id="submitButton">Submit</button>
                 </div>
             </div>
         </form>
+        <div class="mt-3 text-center">
+            <a href="user_login.php">You have an account? Login here.</a>
+        </div>
     </div>
 
     <script>
@@ -128,14 +148,18 @@ if (isset($_POST["submit"])) {
             document.getElementById("genderError").innerHTML = "";
             document.getElementById("addressError").innerHTML = "";
             document.getElementById("emailExistError").innerHTML = ""; // Clear email existence error
+            document.getElementById("passwordError").innerHTML = "";
+            document.getElementById("confirmPasswordError").innerHTML = "";
 
             // Get the values of the form fields
             const name = document.getElementById("name").value.trim();
             const lname = document.getElementById("lname").value.trim();
             const email = document.getElementById("email").value.trim();
             const phone = document.getElementById("phone").value.trim();
-            const gender = document.getElementById("gender").value.trim(); // Get selected gender value
+            const gender = document.getElementById("gender").value.trim();
             const address = document.getElementById("address").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const confirmPassword = document.getElementById("confirm_password").value.trim();
 
             // Validate each field and display an error message if invalid
             if (name === "") {
@@ -165,6 +189,24 @@ if (isset($_POST["submit"])) {
 
             if (address === "") {
                 document.getElementById("addressError").innerHTML = "Please fill the address field.";
+                isValid = false;
+            }
+
+            // Validate Password and Confirm Password
+            const passwordRegex = /^(?=.*[!@#$%^&*(),.?":{}|<>]).{4,}$/;
+            if (password === "") {
+                document.getElementById("passwordError").innerHTML = "Please fill the password field.";
+                isValid = false;
+            } else if (!passwordRegex.test(password)) {
+                document.getElementById("passwordError").innerHTML = "Password must be at least 4 characters long and include a special character.";
+                isValid = false;
+            }
+
+            if (confirmPassword === "") {
+                document.getElementById("confirmPasswordError").innerHTML = "Please confirm your password.";
+                isValid = false;
+            } else if (password !== confirmPassword) {
+                document.getElementById("confirmPasswordError").innerHTML = "Password and Confirm Password do not match.";
                 isValid = false;
             }
 

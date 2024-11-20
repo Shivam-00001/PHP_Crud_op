@@ -35,7 +35,8 @@ if (isset($_POST['submit'])) {
     // Check if the update was successful
     if ($result) {
         echo "<script>alert('Data Successfully Updated');</script>";
-        echo "<script> location.replace('index.php'); </script>";  // Redirect to the index page after updating
+        echo "<script> location.replace('admin_reg&login/admin_dashbord.php')</script>";
+        // Redirect to the index page after updating
     } else {
         echo "<script>alert('Error updating data: " . mysqli_error($connection) . "');</script>";  // Display an error if the query fails
     }
