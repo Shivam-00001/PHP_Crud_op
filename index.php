@@ -1,3 +1,11 @@
+<?php
+include_once ("include/config.php");
+$sql_query = "SELECT * FROM `crud_table` WHERE 1";
+$result = mysqli_query($connection, $sql_query);
+$sno = 1;
+
+?>
+
 <!doctype html>
 <html lang="en">
 
@@ -23,18 +31,31 @@
             <thead class="table-dark">
                 <tr>
                     <th scope="col">SN.</th>
-                    <th scope="col">First</th>
-                    <th scope="col">Last</th>
-                    <th scope="col">Handle</th>
+                    <th scope="col">FirstName</th>
+                    <th scope="col">LastName</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Phone</th>
+                    <th scope="col">Gender</th>
+                    <th scope="col">Address</th>
+                    <th colspan="2" class="text-center">Action</th>
                 </tr>
             </thead>
             <tbody>
+                <?php
+                while ($row = mysqli_fetch_assoc($result)){?>
                 <tr>
-                    <th scope="row">1</th>
-                    <td>Mark</td>
-                    <td>Otto</td>
-                    <td>@mdo</td>
+                    <th scope="row"> <?= $sno ?> </th>
+                    <td><?= $row['name']?></td>
+                    <td><?= $row['lname']?></td>
+                    <td><?= $row['email']?></td>
+                    <td><?= $row['phone']?></td>
+                    <td><?= $row['gender']?></td>
+                    <td><?= $row['address']?></td>
+                    <td><a class="btn btn-sn btn-danger" href="delete.php?id=<?=$row['id'] ?>">Delete</a></td>
+                    <td><a class="btn btn-success" href="update.php?id=<?=$row['id'] ?>">Edit</a></td>
+
                 </tr>
+                <?php $sno++; } ?>
             </tbody>
         </table>
     </div>
